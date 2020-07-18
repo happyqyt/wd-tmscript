@@ -193,6 +193,7 @@
   }
 
   function clickDownload(article, type) {
+      event.stopPropagation()
       // gif
       if (type === "gif") {
           const image = [...article.querySelectorAll("img")].find(image => image.src.includes("video"));
