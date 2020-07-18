@@ -1,0 +1,3 @@
+https://github.com/greasemonkey/greasemonkey.git
+https://github.com/Tampermonkey/tampermonkey.git
+https://github.com/violentmonkey/violentmonkey.git
