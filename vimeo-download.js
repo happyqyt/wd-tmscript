@@ -269,7 +269,7 @@
 // end of dependens
 
 // begin grant apis
-    function GM_xmlHttpRequest(d) {
+    /*function GM_xmlHttpRequest(d) {
       if (!d) throw new Error(_('xhr_no_details'));
       if (!d.url) throw new Error(_('xhr_no_url'));
 
@@ -320,6 +320,43 @@
       });
 
       // TODO: Return an object which can be `.abort()`ed.
+    }*/
+    function GM_xmlhttpRequest(details) {
+      function setupEvent(xhr, url, eventName, callback) {
+        xhr[eventName] = function () {
+          var isComplete = xhr.readyState == 4;
+          var responseState = {
+            responseText: xhr.responseText,
+            readyState: xhr.readyState,
+            responseHeaders: isComplete ? xhr.getAllResponseHeaders() : "",
+            status: isComplete ? xhr.status : 0,
+            statusText: isComplete ? xhr.statusText : "",
+            finalUrl: isComplete ? url : ""
+          };
+          callback(responseState);
+        };
+      }
+
+      var xhr = new XMLHttpRequest();
+      var eventNames = ["onload", "onerror", "onreadystatechange"];
+      for (var i = 0; i < eventNames.length; i++ ) {
+        var eventName = eventNames[i];
+        if (eventName in details) {
+          setupEvent(xhr, details.url, eventName, details[eventName]);
+        }
+      }
+
+      xhr.open(details.method, details.url);
+
+      if (details.overrideMimeType) {
+        xhr.overrideMimeType(details.overrideMimeType);
+      }
+      if (details.headers) {
+        for (var header in details.headers) {
+          xhr.setRequestHeader(header, details.headers[header]);
+        }
+      }
+      xhr.send(details.data ? details.data : null);
     }
     function GM_download(arg1, name) {
       // not using ... as it calls Babel's polyfill that calls unsafe Object.xxx
@@ -371,23 +408,55 @@ function downloadSet () {
 
     //请求HTML
     function get_find(url){
-        GM_xmlHttpRequest({
-            method: "GET",
-            url: url,
-            onload: function(res) {
-                console.log("请求HTML成功！")
-                if (res.status == 200) {
-                    var text = res.responseText;
-                    var find = get_mp4(text)
+        // GM_xmlhttpRequest({
+        //     method: "GET",
+        //     url: url,
+        //     // name: 'temper',
+        //     // saveAs: true,
+        //     // headers: {"accept":"*/*","accept-language":"vi-VN,vi;q=0.9,zh-CN;q=0.8,zh;q=0.7","Sec-Fetch-Site":"cross-site","Sec-Fetch-Mode":"cors","DNT":"1","Origin":"chrome-extension://aihomhdbhpnpmcnnbckjjcebjoikpihj","User-Agent":navigator.userAgent},
+        //     onload: function(res) {
+        //         console.log("请求HTML成功！")
+        //         console.log(res)
+        //         if (res.status == 200) {
+        //             var text = res.responseText;
+        //             var find = get_mp4(text)
 
-                   // $('sc-uJMKN iJVdiV').after("<button class='sc-gZMcBi deFSmv' style='margin-left: 20px;'><a href='"+find+"' style='color:rgb(248, 249, 250)' target='_blank'>+ Download</a></button>")
-                    // $('.clip_info-subline--watch .sc-jhAzac').after("<button class='sc-jhAzac cejtKN' style='margin-left: 20px;'><a href='"+find+"' style='color:rgb(248, 249, 250)' target='_blank'>+ Download</a></button>")
-                    $('.js-follow_user_btn').after("<button class='btn js-follow_user_btn btn_sm btn_blue_o topnav_icon_mobile_add_b' style='clear:both;margin-top:-20px;'><a href='"+find+"' target='_blank' class='btn_text'>Download</a></button>")
-                    $('button.sc-jqCOkK.gtMnc').after("<button class='sc-jqCOkK gtMnc' style='margin-left: 20px;'><a href='"+find+"' style='color:rgb(248, 249, 250)' target='_blank'>+ Download</a></button>")
+        //            // $('sc-uJMKN iJVdiV').after("<button class='sc-gZMcBi deFSmv' style='margin-left: 20px;'><a href='"+find+"' style='color:rgb(248, 249, 250)' target='_blank'>+ Download</a></button>")
+        //             // $('.clip_info-subline--watch .sc-jhAzac').after("<button class='sc-jhAzac cejtKN' style='margin-left: 20px;'><a href='"+find+"' style='color:rgb(248, 249, 250)' target='_blank'>+ Download</a></button>")
+        //             $('.js-follow_user_btn').after("<button class='btn js-follow_user_btn btn_sm btn_blue_o topnav_icon_mobile_add_b' style='clear:both;margin-top:-20px;'><a href='"+find+"' target='_blank' class='btn_text'>Download</a></button>")
+        //             $('button.sc-jqCOkK.gtMnc').after("<button class='sc-jqCOkK gtMnc' style='margin-left: 20px;'><a href='"+find+"' style='color:rgb(248, 249, 250)' target='_blank'>+ Download</a></button>")
 
-                }
-            }
-        });
+        //         }
+        //     }
+        // });
+
+        var xhr = new XMLHttpRequest();
+        //设置响应返回的数据格式
+        xhr.responseType = "text";
+        //创建一个 post 请求，采用异步
+        xhr.open('GET', url, true);
+        //注册相关事件回调处理函数
+        xhr.onload = function(res) { 
+          console.log(res)
+        };
+        xhr.setRequestHeader("Content-Type","text/plain");
+        //发送数据
+        xhr.send();
+        // $("body").load(url, function(responseTxt,statusTxt,xhr){
+        //   console.log(responseTxt,statusTxt,xhr)
+        //   // if(statusTxt=="success")
+        //   //   alert("外部内容加载成功!");
+        //   // if(statusTxt=="error")
+        //   //   alert("Error: "+xhr.status+": "+xhr.statusText);
+        // })
+        // var fr = document.createElement('iframe')
+        // fr.style.display = 'none'
+        // fr.src = url
+        // document.body.appendChild(fr)
+
+        // fr.onload = function () {
+        //   let body = fr.ownerDocument.body.innerHTML
+        // }
     }
 
     //不判断了，就是干
